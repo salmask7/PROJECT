@@ -39,12 +39,32 @@ from sklearn.model_selection import train_test_split
 # =============================================================================
 
 class Config:
-    # Dataset paths
+    # Dataset paths - Correction des chemins Kaggle
     DATA_PATH = '/kaggle/input/3dbraintissuesegmentation'
-    TRAIN_IMG_PATH = os.path.join(DATA_PATH, 'train/image')
-    TRAIN_MASK_PATH = os.path.join(DATA_PATH, 'train/mask')
-    VALID_IMG_PATH = os.path.join(DATA_PATH, 'valid/image')
-    VALID_MASK_PATH = os.path.join(DATA_PATH, 'valid/mask')
+    TRAIN_IMG_PATH = os.path.join(DATA_PATH, 'train', 'image')
+    TRAIN_MASK_PATH = os.path.join(DATA_PATH, 'train', 'mask')
+    VALID_IMG_PATH = os.path.join(DATA_PATH, 'valid', 'image')
+    VALID_MASK_PATH = os.path.join(DATA_PATH, 'valid', 'mask')
+    
+    # Vérification des chemins
+    def check_paths(self):
+        print("=== VÉRIFICATION DES CHEMINS ===")
+        print(f"DATA_PATH existe: {os.path.exists(self.DATA_PATH)}")
+        print(f"TRAIN_IMG_PATH existe: {os.path.exists(self.TRAIN_IMG_PATH)}")
+        print(f"TRAIN_MASK_PATH existe: {os.path.exists(self.TRAIN_MASK_PATH)}")
+        print(f"VALID_IMG_PATH existe: {os.path.exists(self.VALID_IMG_PATH)}")
+        print(f"VALID_MASK_PATH existe: {os.path.exists(self.VALID_MASK_PATH)}")
+        
+        # Lister le contenu du répertoire principal
+        if os.path.exists(self.DATA_PATH):
+            print(f"\nContenu de {self.DATA_PATH}:")
+            print(os.listdir(self.DATA_PATH))
+            
+        # Lister le contenu du train si il existe
+        train_path = os.path.join(self.DATA_PATH, 'train')
+        if os.path.exists(train_path):
+            print(f"\nContenu de {train_path}:")
+            print(os.listdir(train_path))
     
     # Model parameters
     IMG_SIZE = (128, 128, 128)  # Réduit pour Kaggle
@@ -292,6 +312,26 @@ def train_model():
     """Fonction principale d'entraînement"""
     
     print("=== CHARGEMENT DU DATASET ===")
+    
+    # Vérifier les chemins d'abord
+    config.check_paths()
+    
+    # Essayer de trouver les bons chemins
+    data_path = '/kaggle/input/3dbraintissuesegmentation'
+    
+    # Vérifier la structure du dataset
+    if os.path.exists(data_path):
+        print(f"\nStructure du dataset:")
+        for root, dirs, files in os.walk(data_path):
+            level = root.replace(data_path, '').count(os.sep)
+            indent = ' ' * 2 * level
+            print(f"{indent}{os.path.basename(root)}/")
+            subindent = ' ' * 2 * (level + 1)
+            for file in files[:5]:  # Afficher seulement les 5 premiers fichiers
+                print(f"{subindent}{file}")
+            if len(files) > 5:
+                print(f"{subindent}... et {len(files) - 5} autres fichiers")
+    
     # Charger seulement un échantillon pour commencer (Kaggle limitation)
     X_train, y_train = load_dataset(config.DATA_PATH, config.TRAIN_IMG_PATH, config.TRAIN_MASK_PATH, max_samples=50)
     X_val, y_val = load_dataset(config.DATA_PATH, config.VALID_IMG_PATH, config.VALID_MASK_PATH, max_samples=20)
